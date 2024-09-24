@@ -186,17 +186,19 @@ class _SelectionDialogState extends State<SelectionDialog> {
                 : Row(
                     children: [
                       SizedBox(
-                        width: 50,
+                        width: 47,
                         child: Text(
                           e.toString(),
                           overflow: TextOverflow.fade,
                           style: widget.textStyle,
                         ),
                       ),
-                      Text(
-                        e.toCountryStringOnly(),
-                        overflow: TextOverflow.fade,
-                        style: widget.textStyle,
+                      Flexible(
+                        child: Text(
+                          e.toCountryStringOnly(),
+                          overflow: TextOverflow.fade,
+                          style: widget.textStyle,
+                        ),
                       ),
                     ],
                   ),
