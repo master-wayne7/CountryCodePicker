@@ -54,9 +54,7 @@ class SelectionDialog extends StatefulWidget {
     this.closeIcon,
     this.dialogItemPadding = const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
     this.searchPadding = const EdgeInsets.symmetric(horizontal: 24),
-  })  : searchDecoration = searchDecoration.prefixIcon == null
-            ? searchDecoration.copyWith(prefixIcon: const Icon(Icons.search))
-            : searchDecoration,
+  })  : searchDecoration = searchDecoration.prefixIcon == null ? searchDecoration.copyWith(prefixIcon: const Icon(Icons.search)) : searchDecoration,
         super(key: key);
 
   @override
@@ -66,6 +64,7 @@ class SelectionDialog extends StatefulWidget {
 class _SelectionDialogState extends State<SelectionDialog> {
   /// this is useful for filtering purpose
   late List<CountryCode> filteredElements;
+  TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -73,8 +72,7 @@ class _SelectionDialogState extends State<SelectionDialog> {
         child: Container(
           clipBehavior: Clip.hardEdge,
           width: widget.size?.width ?? MediaQuery.of(context).size.width,
-          height:
-              widget.size?.height ?? MediaQuery.of(context).size.height * 0.85,
+          height: widget.size?.height ?? MediaQuery.of(context).size.height * 0.85,
           decoration: widget.boxDecoration ??
               BoxDecoration(
                 color: widget.backgroundColor ?? Colors.white,
@@ -93,16 +91,17 @@ class _SelectionDialogState extends State<SelectionDialog> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (!widget.hideCloseIcon)
-              IconButton(
-                padding: const EdgeInsets.all(0),
-                iconSize: 20,
-                icon: widget.closeIcon!,
-                onPressed: () => Navigator.pop(context),
-              ),
+                IconButton(
+                  padding: const EdgeInsets.all(0),
+                  iconSize: 20,
+                  icon: widget.closeIcon!,
+                  onPressed: () => Navigator.pop(context),
+                ),
               if (!widget.hideSearch)
                 Padding(
                   padding: widget.searchPadding,
                   child: TextField(
+                    controller: _searchController,
                     style: widget.searchStyle,
                     decoration: widget.searchDecoration,
                     onChanged: _filterElements,
@@ -111,39 +110,44 @@ class _SelectionDialogState extends State<SelectionDialog> {
               Expanded(
                 child: ListView(
                   children: [
-                    widget.favoriteElements.isEmpty
-                        ? const DecoratedBox(decoration: BoxDecoration())
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ...widget.favoriteElements.map(
-                                (f) => InkWell(
-                                  onTap: () {
-                                    _selectItem(f);
-                                  },
-                                  child: Padding(
-                                    padding: widget.dialogItemPadding,
-                                    child: _buildOption(f),
-                                  )
-                                )
-                              ),
-                              const Divider(),
-                            ],
-                          ),
+                    ListenableBuilder(
+                      listenable: _searchController,
+                      builder: (context, child) {
+                        if (_searchController.text.isNotEmpty) {
+                          return const SizedBox();
+                        }
+                        return widget.favoriteElements.isEmpty
+                            ? const DecoratedBox(decoration: BoxDecoration())
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ...widget.favoriteElements.map(
+                                    (f) => InkWell(
+                                      onTap: () {
+                                        _selectItem(f);
+                                      },
+                                      child: Padding(
+                                        padding: widget.dialogItemPadding,
+                                        child: _buildOption(f),
+                                      ),
+                                    ),
+                                  ),
+                                  const Divider(),
+                                ],
+                              );
+                      },
+                    ),
                     if (filteredElements.isEmpty)
                       _buildEmptySearchWidget(context)
                     else
-                      ...filteredElements.map(
-                        (e) => InkWell(
+                      ...filteredElements.map((e) => InkWell(
                           onTap: () {
                             _selectItem(e);
                           },
                           child: Padding(
-                          padding: widget.dialogItemPadding,
+                            padding: widget.dialogItemPadding,
                             child: _buildOption(e),
-                          )
-                        )
-                      ),
+                          ))),
                   ],
                 ),
               ),
@@ -163,8 +167,7 @@ class _SelectionDialogState extends State<SelectionDialog> {
               child: Container(
                 margin: const EdgeInsets.only(right: 16.0),
                 decoration: widget.flagDecoration,
-                clipBehavior:
-                    widget.flagDecoration == null ? Clip.none : Clip.hardEdge,
+                clipBehavior: widget.flagDecoration == null ? Clip.none : Clip.hardEdge,
                 child: Image.asset(
                   e.flagUri!,
                   package: 'country_code_picker',
@@ -174,13 +177,29 @@ class _SelectionDialogState extends State<SelectionDialog> {
             ),
           Expanded(
             flex: 4,
-            child: Text(
-              widget.showCountryOnly!
-                  ? e.toCountryStringOnly()
-                  : e.toLongString(),
-              overflow: TextOverflow.fade,
-              style: widget.textStyle,
-            ),
+            child: widget.showCountryOnly!
+                ? Text(
+                    e.toCountryStringOnly(),
+                    overflow: TextOverflow.fade,
+                    style: widget.textStyle,
+                  )
+                : Row(
+                    children: [
+                      SizedBox(
+                        width: 50,
+                        child: Text(
+                          e.toString(),
+                          overflow: TextOverflow.fade,
+                          style: widget.textStyle,
+                        ),
+                      ),
+                      Text(
+                        e.toCountryStringOnly(),
+                        overflow: TextOverflow.fade,
+                        style: widget.textStyle,
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -193,8 +212,7 @@ class _SelectionDialogState extends State<SelectionDialog> {
     }
 
     return Center(
-      child: Text(CountryLocalizations.of(context)?.translate('no_country') ??
-          'No country found'),
+      child: Text(CountryLocalizations.of(context)?.translate('no_country') ?? 'No country found'),
     );
   }
 
@@ -207,12 +225,7 @@ class _SelectionDialogState extends State<SelectionDialog> {
   void _filterElements(String s) {
     s = s.toUpperCase();
     setState(() {
-      filteredElements = widget.elements
-          .where((e) =>
-              e.code!.contains(s) ||
-              e.dialCode!.contains(s) ||
-              e.name!.toUpperCase().contains(s))
-          .toList();
+      filteredElements = widget.elements.where((e) => e.code!.contains(s) || e.dialCode!.contains(s) || e.name!.toUpperCase().contains(s)).toList();
     });
   }
 

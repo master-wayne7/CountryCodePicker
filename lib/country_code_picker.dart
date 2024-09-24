@@ -1,6 +1,5 @@
 library country_code_picker;
 
-import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
 
 import 'src/country_code.dart';
