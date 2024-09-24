@@ -232,4 +232,10 @@ class _SelectionDialogState extends State<SelectionDialog> {
   void _selectItem(CountryCode e) {
     Navigator.pop(context, e);
   }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 }
