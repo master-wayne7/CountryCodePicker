@@ -91,6 +91,8 @@ class CountryCodePicker extends StatefulWidget {
 
   final EdgeInsetsGeometry searchPadding;
 
+  final EdgeInsets dialogInsetPadding;
+
   const CountryCodePicker({
     this.onChanged,
     this.onInit,
@@ -128,6 +130,7 @@ class CountryCodePicker extends StatefulWidget {
     this.countryList = codes,
     this.dialogItemPadding = const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
     this.searchPadding = const EdgeInsets.symmetric(horizontal: 24),
+    this.dialogInsetPadding = const EdgeInsets.all(16),
     Key? key,
   }) : super(key: key);
 
@@ -260,6 +263,7 @@ class CountryCodePickerState extends State<CountryCodePicker> {
       context: context,
       builder: (context) => Center(
         child: Dialog(
+          insetPadding: widget.dialogInsetPadding,
           child: SelectionDialog(
             elements,
             favoriteElements,
