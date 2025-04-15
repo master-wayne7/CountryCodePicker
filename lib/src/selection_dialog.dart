@@ -227,7 +227,17 @@ class _SelectionDialogState extends State<SelectionDialog> {
   void _filterElements(String s) {
     s = s.toUpperCase();
     setState(() {
-      filteredElements = widget.elements.where((e) => e.code!.contains(s) || e.dialCode!.contains(s) || e.toCountryStringOnly().toUpperCase().contains(s)).toList();
+      // First get items that start with the query
+      var startsWithMatches = widget.elements.where((e) => e.code!.startsWith(s) || e.dialCode!.startsWith(s) || e.toCountryStringOnly().toUpperCase().startsWith(s)).toSet();
+
+      // Then get items that contain the query but don't start with it
+      var containsMatches = widget.elements.where((e) => (!startsWithMatches.contains(e)) && (e.code!.contains(s) || e.dialCode!.contains(s) || e.toCountryStringOnly().toUpperCase().contains(s)));
+
+      // Combine both lists while preserving order
+      filteredElements = [
+        ...startsWithMatches,
+        ...containsMatches
+      ];
     });
   }
 
